@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.navLink {
+  text-decoration: none;
+  color: #36454F;
+}
+
+.navLink:hover {
+  color: #C5A253;
+}

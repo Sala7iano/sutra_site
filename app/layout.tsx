@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Cairo } from "next/font/google";
-import LanguageToggle from "./components/LanguageToggle"; // ← new import
+import LanguageToggle from "./components/LanguageToggle";
 
 const cairo = Cairo({
   weight: ["300", "400", "700"],
@@ -69,39 +69,17 @@ export default function RootLayout({
               justifyContent: "center",
             }}
           >
-            {[
-              { name: "Home", href: "/" },
-              { name: "Abayas", href: "/abayas" },
-              { name: "Isdalat", href: "/isdalat" },
-              { name: "Contact", href: "/contact" },
-            ].map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                style={{
-                  textDecoration: "none",
-                  color: "#36454F",
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.color = "#C5A253")}
-                onMouseOut={(e) => (e.currentTarget.style.color = "#36454F")}
-              >
-                {link.name}
-              </a>
-            ))}
+            <a href="/" className="navLink">Home</a>
+            <a href="/abayas" className="navLink">Abayas</a>
+            <a href="/isdalat" className="navLink">Isdalat</a>
+            <a href="/contact" className="navLink">Contact</a>
           </nav>
 
           {/* Icons */}
           <div style={{ display: "flex", gap: "1em", fontSize: "1.3rem" }}>
-            <a href="/favorites" title="Favorites">
-              ♡
-            </a>
-            <a href="/cart" title="Cart">
-              🛒
-            </a>
-            <a href="/profile" title="Profile">
-              👤
-            </a>
-            {/* 🌐 Language toggle button */}
+            <a href="/favorites" title="Favorites">♡</a>
+            <a href="/cart" title="Cart">🛒</a>
+            <a href="/profile" title="Profile">👤</a>
             <LanguageToggle />
           </div>
         </header>
