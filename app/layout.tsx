@@ -1,8 +1,16 @@
 import "./globals.css";
+import { Cairo } from "next/font/google";
+
+const cairo = Cairo({
+  weight: ["300", "400", "700"],
+  subsets: ["latin", "arabic"],
+  display: "swap",
+});
 
 export const metadata = {
-  title: "سُترة | Luxury Modesty Wear",
-  description: "Elegant abayas and isdalat by سُترة",
+  title: "سُترة | Luxury Modesty Wear",
+  description:
+    "سُترة — abaya and isdal designs blending contemporary elegance with traditional comfort.",
 };
 
 export default function RootLayout({
@@ -13,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        className={cairo.className}
         style={{
           backgroundColor: "#ffffff",
           color: "#36454F",
@@ -25,26 +34,30 @@ export default function RootLayout({
           justifyContent: "space-between",
         }}
       >
-        {/* HEADER (visible on all pages) */}
+        {/* ===== HEADER (appears on all pages) ===== */}
         <header
           style={{
             borderBottom: "1px solid #C5A253",
-            padding: "1.2em 2em",
+            padding: "1.2em 1.5em",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
+            position: "sticky",
+            top: 0,
+            background: "#fff",
+            zIndex: 10,
           }}
         >
-          {/* Left — brand */}
-          <div style={{ textAlign: "center" }}>
-            <a href="/" style={{ textDecoration: "none", color: "#36454F" }}>
+          {/* Brand */}
+          <a href="/" style={{ textDecoration: "none", color: "#36454F" }}>
+            <div style={{ textAlign: "center" }}>
               <h1 style={{ fontSize: "1.7rem", margin: 0 }}>سُترة</h1>
               <p style={{ margin: 0, fontSize: ".9rem" }}>Luxury Modesty Wear</p>
-            </a>
-          </div>
+            </div>
+          </a>
 
-          {/* Center — nav links */}
+          {/* Navigation */}
           <nav
             style={{
               display: "flex",
@@ -53,24 +66,39 @@ export default function RootLayout({
               justifyContent: "center",
             }}
           >
-            <a href="/" style={{ textDecoration: "none", color: "#36454F" }}>Home</a>
-            <a href="/abayas" style={{ textDecoration: "none", color: "#36454F" }}>Abayas</a>
-            <a href="/isdalat" style={{ textDecoration: "none", color: "#36454F" }}>Isdalat</a>
-            <a href="/contact" style={{ textDecoration: "none", color: "#36454F" }}>Contact</a>
+            {[
+              { name: "Home", href: "/" },
+              { name: "Abayas", href: "/abayas" },
+              { name: "Isdalat", href: "/isdalat" },
+              { name: "Contact", href: "/contact" },
+            ].map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                style={{
+                  textDecoration: "none",
+                  color: "#36454F",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.color = "#C5A253")}
+                onMouseOut={(e) => (e.currentTarget.style.color = "#36454F")}
+              >
+                {link.name}
+              </a>
+            ))}
           </nav>
 
-          {/* Right — icons */}
+          {/* Icons */}
           <div style={{ display: "flex", gap: "1em", fontSize: "1.3rem" }}>
-            <a href="/favorites" style={{ textDecoration: "none", color: "#36454F" }}>♡</a>
-            <a href="/cart" style={{ textDecoration: "none", color: "#36454F" }}>🛒</a>
-            <a href="/profile" style={{ textDecoration: "none", color: "#36454F" }}>👤</a>
+            <a href="/favorites" title="Favorites">♡</a>
+            <a href="/cart" title="Cart">🛒</a>
+            <a href="/profile" title="Profile">👤</a>
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* ===== PAGE CONTENT ===== */}
         <main style={{ flexGrow: 1 }}>{children}</main>
 
-        {/* FOOTER (visible on all pages) */}
+        {/* ===== FOOTER ===== */}
         <footer
           style={{
             borderTop: "1px solid #C5A253",
@@ -79,7 +107,12 @@ export default function RootLayout({
             textAlign: "center",
           }}
         >
-          © 2025 سُترة / SUTRA — All rights reserved.
+          <p style={{ margin: 0 }}>
+            سُترة © 2025 — All Rights Reserved
+          </p>
+          <p style={{ margin: "0.3em 0 0" }}>
+            Instagram | Facebook | WhatsApp
+          </p>
         </footer>
       </body>
     </html>
