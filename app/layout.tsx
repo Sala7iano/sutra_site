@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Cairo } from "next/font/google";
+import LanguageToggle from "./components/LanguageToggle"; // ← new import
 
 const cairo = Cairo({
   weight: ["300", "400", "700"],
@@ -53,7 +54,9 @@ export default function RootLayout({
           <a href="/" style={{ textDecoration: "none", color: "#36454F" }}>
             <div style={{ textAlign: "center" }}>
               <h1 style={{ fontSize: "1.7rem", margin: 0 }}>سُترة</h1>
-              <p style={{ margin: 0, fontSize: ".9rem" }}>Luxury Modesty Wear</p>
+              <p style={{ margin: 0, fontSize: ".9rem" }}>
+                Luxury Modesty Wear
+              </p>
             </div>
           </a>
 
@@ -89,9 +92,17 @@ export default function RootLayout({
 
           {/* Icons */}
           <div style={{ display: "flex", gap: "1em", fontSize: "1.3rem" }}>
-            <a href="/favorites" title="Favorites">♡</a>
-            <a href="/cart" title="Cart">🛒</a>
-            <a href="/profile" title="Profile">👤</a>
+            <a href="/favorites" title="Favorites">
+              ♡
+            </a>
+            <a href="/cart" title="Cart">
+              🛒
+            </a>
+            <a href="/profile" title="Profile">
+              👤
+            </a>
+            {/* 🌐 Language toggle button */}
+            <LanguageToggle />
           </div>
         </header>
 
@@ -107,9 +118,7 @@ export default function RootLayout({
             textAlign: "center",
           }}
         >
-          <p style={{ margin: 0 }}>
-            سُترة © 2025 — All Rights Reserved
-          </p>
+          <p style={{ margin: 0 }}>سُترة © 2025 — All Rights Reserved</p>
           <p style={{ margin: "0.3em 0 0" }}>
             Instagram | Facebook | WhatsApp
           </p>
