@@ -1,3 +1,4 @@
+// app/layout.tsx
 import "./globals.css";
 import { Cairo } from "next/font/google";
 import LanguageToggle from "./components/LanguageToggle";
@@ -35,10 +36,9 @@ export default function RootLayout({
           justifyContent: "space-between",
         }}
       >
-        {/* ===== HEADER (appears on all pages) ===== */}
         <header
           style={{
-            borderBottom: "0.5px solid #C5A25360",
+            borderBottom: "0.5px solid #C5A25355",
             padding: "1.2em 1.5em",
             display: "flex",
             justifyContent: "space-between",
@@ -50,17 +50,13 @@ export default function RootLayout({
             zIndex: 10,
           }}
         >
-          {/* Brand */}
           <a href="/" style={{ textDecoration: "none", color: "#36454F" }}>
             <div style={{ textAlign: "center" }}>
               <h1 style={{ fontSize: "1.7rem", margin: 0 }}>سُترة</h1>
-              <p style={{ margin: 0, fontSize: ".9rem" }}>
-                Luxury Modesty Wear
-              </p>
+              <p style={{ margin: 0, fontSize: ".9rem" }}>Luxury Modesty Wear</p>
             </div>
           </a>
 
-          {/* Navigation */}
           <nav
             style={{
               display: "flex",
@@ -75,81 +71,86 @@ export default function RootLayout({
             <a href="/contact" className="navLink">Contact</a>
           </nav>
 
-          {/* Icons */}
-          {/* Icons with counters */}
-<div style={{ display: "flex", gap: "1.2em", alignItems: "center" }}>
-  <a href="/favorites" title="Favorites" style={{ position: "relative" }}>
-    ♡
-    <span
-      id="favCount"
-      style={{
-        position: "absolute",
-        top: "-8px",
-        right: "-10px",
-        fontSize: "0.7rem",
-        color: "#fff",
-        background: "#C5A253",
-        borderRadius: "50%",
-        padding: "0 4px",
-      }}
-    ></span>
-  </a>
+          {/* Icons + live counters */}
+          <div style={{ display: "flex", gap: "1.2em", alignItems: "center" }}>
+            <a href="/favorites" title="Favorites" style={{ position: "relative" }}>
+              ♡
+              <span
+                id="favCount"
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-10px",
+                  fontSize: "0.7rem",
+                  color: "#fff",
+                  background: "#C5A253",
+                  borderRadius: "50%",
+                  padding: "0 4px",
+                }}
+              ></span>
+            </a>
 
-  <a href="/cart" title="Cart" style={{ position: "relative" }}>
-    🛒
-    <span
-      id="cartCount"
-      style={{
-        position: "absolute",
-        top: "-8px",
-        right: "-10px",
-        fontSize: "0.7rem",
-        color: "#fff",
-        background: "#C5A253",
-        borderRadius: "50%",
-        padding: "0 4px",
-      }}
-    ></span>
-  </a>
+            <a href="/cart" title="Cart" style={{ position: "relative" }}>
+              🛒
+              <span
+                id="cartCount"
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-10px",
+                  fontSize: "0.7rem",
+                  color: "#fff",
+                  background: "#C5A253",
+                  borderRadius: "50%",
+                  padding: "0 4px",
+                }}
+              ></span>
+            </a>
 
-  <a href="/profile" title="Profile">👤</a>
-  <LanguageToggle />
-</div>
+            <a href="/profile" title="Profile">👤</a>
+            <LanguageToggle />
+          </div>
         </header>
 
-        {/* ===== PAGE CONTENT ===== */}
         <main style={{ flexGrow: 1 }}>{children}</main>
 
-        {/* ===== FOOTER ===== */}
         <footer
           style={{
-            borderTop: "1px solid #C5A253",
+            borderTop: "1px solid #C5A25355",
             padding: "1em 0",
             fontSize: ".9rem",
             textAlign: "center",
           }}
         >
-          <p style={{ margin: 0 }}>سُترة © 2025 — All Rights Reserved</p>
-          <p style={{ margin: "0.3em 0 0" }}>
-            Instagram | Facebook | WhatsApp
-          </p>
+          <p style={{ margin: 0 }}>سُترة © 2025 — All Rights Reserved</p>
+          <p style={{ margin: "0.3em 0 0" }}>Instagram | Facebook | WhatsApp</p>
         </footer>
+
+        {/* Counter updater (runs on any page) */}
         <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      function updateCounts(){
-        const favs = JSON.parse(localStorage.getItem('favorites')||'[]');
-        const cart = JSON.parse(localStorage.getItem('cart')||'[]');
-        const f = document.getElementById('favCount');
-        const c = document.getElementById('cartCount');
-        if(f) f.textContent = favs.length>0 ? favs.length : '';
-        if(c) c.textContent = cart.length>0 ? cart.length : '';
-      }
-      updateCounts();
-      window.addEventListener('storage', updateCounts);
-    `,
-  }}
-/>
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                function read(key){
+                  try { return JSON.parse(localStorage.getItem(key)||'[]'); }
+                  catch(e){ return []; }
+                }
+                function update(){
+                  var f = document.getElementById('favCount');
+                  var c = document.getElementById('cartCount');
+                  var favs = read('favorites');
+                  var cart = read('cart');
+                  if(f) f.textContent = favs.length > 0 ? String(favs.length) : '';
+                  if(c) c.textContent = cart.length > 0 ? String(cart.length) : '';
+                }
+                update();
+                window.addEventListener('storage', update);
+                window.addEventListener('favorites-updated', update);
+                window.addEventListener('cart-updated', update);
+              })();
+            `,
+          }}
+        />
       </body>
     </html>
   );

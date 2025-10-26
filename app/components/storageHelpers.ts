@@ -1,37 +1,53 @@
-// LocalStorage utilities
+// app/components/storageHelpers.ts
+export type CartItem = { name: string; price: string; img?: string };
 
-export function getFavorites() {
-  if (typeof window === "undefined") return [];
-  return JSON.parse(localStorage.getItem("favorites") || "[]");
+function read<T = any>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+function write(key: string, value: any) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+function emit(name: string) {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(name));
 }
 
-export function toggleFavorite(itemName: string) {
-  if (typeof window === "undefined") return;
+/* Favorites */
+export function getFavorites(): string[] {
+  return read<string[]>("favorites", []);
+}
+export function toggleFavorite(itemName: string): string[] {
   const favs = getFavorites();
   const exists = favs.includes(itemName);
-  const updated = exists
-    ? favs.filter((n: string) => n !== itemName)
-    : [...favs, itemName];
-  localStorage.setItem("favorites", JSON.stringify(updated));
+  const updated = exists ? favs.filter((n) => n !== itemName) : [...favs, itemName];
+  write("favorites", updated);
+  emit("favorites-updated");
   return updated;
 }
 
-export function getCart() {
-  if (typeof window === "undefined") return [];
-  return JSON.parse(localStorage.getItem("cart") || "[]");
+/* Cart */
+export function getCart(): CartItem[] {
+  return read<CartItem[]>("cart", []);
 }
-
-export function addToCart(product: any) {
-  if (typeof window === "undefined") return;
+export function addToCart(product: CartItem): CartItem[] {
   const cart = getCart();
-  cart.push(product);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  return cart;
+  const updated = [...cart, product];
+  write("cart", updated);
+  emit("cart-updated");
+  return updated;
 }
-
-export function removeFromCart(name: string) {
-  if (typeof window === "undefined") return;
-  const cart = getCart().filter((p: any) => p.name !== name);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  return cart;
+export function removeFromCart(name: string): CartItem[] {
+  const updated = getCart().filter((p) => p.name !== name);
+  write("cart", updated);
+  emit("cart-updated");
+  return updated;
+}
+export function clearCart(): void {
+  write("cart", []);
+  emit("cart-updated");
 }
