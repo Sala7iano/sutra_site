@@ -38,7 +38,7 @@ export default function RootLayout({
         {/* ===== HEADER (appears on all pages) ===== */}
         <header
           style={{
-            borderBottom: "1px solid #C5A253",
+            borderBottom: "0.5px solid #C5A25360",
             padding: "1.2em 1.5em",
             display: "flex",
             justifyContent: "space-between",

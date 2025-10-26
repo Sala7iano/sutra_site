@@ -29,8 +29,7 @@ export default function Home() {
         🌿 {lang === "ar" ? "تشكيلة الربيع 2025 – قريبًا" : "Our Spring Line 2025 – Launching Soon"} 🌿
       </p>
 
-      <a href="/abayas" className="viewBtn">
-        {t.view_button}
+<a href="/isdalat" className="viewBtn">        {t.view_button}
       </a>
     </section>
   );
