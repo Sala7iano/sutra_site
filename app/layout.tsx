@@ -76,12 +76,45 @@ export default function RootLayout({
           </nav>
 
           {/* Icons */}
-          <div style={{ display: "flex", gap: "1em", fontSize: "1.3rem" }}>
-            <a href="/favorites" title="Favorites">♡</a>
-            <a href="/cart" title="Cart">🛒</a>
-            <a href="/profile" title="Profile">👤</a>
-            <LanguageToggle />
-          </div>
+          {/* Icons with counters */}
+<div style={{ display: "flex", gap: "1.2em", alignItems: "center" }}>
+  <a href="/favorites" title="Favorites" style={{ position: "relative" }}>
+    ♡
+    <span
+      id="favCount"
+      style={{
+        position: "absolute",
+        top: "-8px",
+        right: "-10px",
+        fontSize: "0.7rem",
+        color: "#fff",
+        background: "#C5A253",
+        borderRadius: "50%",
+        padding: "0 4px",
+      }}
+    ></span>
+  </a>
+
+  <a href="/cart" title="Cart" style={{ position: "relative" }}>
+    🛒
+    <span
+      id="cartCount"
+      style={{
+        position: "absolute",
+        top: "-8px",
+        right: "-10px",
+        fontSize: "0.7rem",
+        color: "#fff",
+        background: "#C5A253",
+        borderRadius: "50%",
+        padding: "0 4px",
+      }}
+    ></span>
+  </a>
+
+  <a href="/profile" title="Profile">👤</a>
+  <LanguageToggle />
+</div>
         </header>
 
         {/* ===== PAGE CONTENT ===== */}
@@ -101,6 +134,22 @@ export default function RootLayout({
             Instagram | Facebook | WhatsApp
           </p>
         </footer>
+        <script
+  dangerouslySetInnerHTML={{
+    __html: `
+      function updateCounts(){
+        const favs = JSON.parse(localStorage.getItem('favorites')||'[]');
+        const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+        const f = document.getElementById('favCount');
+        const c = document.getElementById('cartCount');
+        if(f) f.textContent = favs.length>0 ? favs.length : '';
+        if(c) c.textContent = cart.length>0 ? cart.length : '';
+      }
+      updateCounts();
+      window.addEventListener('storage', updateCounts);
+    `,
+  }}
+/>
       </body>
     </html>
   );
