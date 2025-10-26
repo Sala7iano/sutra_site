@@ -2,7 +2,6 @@
 import en from "./messages/en.json";
 import ar from "./messages/ar.json";
 import ProductGrid from "./components/ProductGrid";
-
 export default function Home() {
   const lang =
     typeof window !== "undefined"
