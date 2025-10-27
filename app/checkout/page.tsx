@@ -9,7 +9,7 @@ export default function Checkout() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
-  // load cart + saved form
+  // Load cart & saved form
   useEffect(() => {
     try {
       const c = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -38,14 +38,35 @@ export default function Checkout() {
 
   const payNow = async () => {
     setErr("");
+
     if (!cart.length) {
       setErr("Your cart is empty.");
       return;
     }
-    if (!form.first_name || !form.email || !form.phone_number) {
-      setErr("Please fill first name, email, and phone.");
+
+    // --- Improved validation ---
+    const nameReg = /^[A-Za-z\u0621-\u064A\s]{2,}$/; // Arabic & English letters, min 2 chars
+    const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneReg = /^\+?\d{8,15}$/; // optional '+' then 8-15 digits
+
+    if (!nameReg.test(form.first_name)) {
+      setErr("Please enter a valid first name (letters or Arabic only).");
       return;
     }
+    if (form.last_name && !nameReg.test(form.last_name)) {
+      setErr("Please enter a valid last name (letters or Arabic only).");
+      return;
+    }
+    if (!emailReg.test(form.email)) {
+      setErr("Please enter a valid email address.");
+      return;
+    }
+    if (!phoneReg.test(form.phone_number)) {
+      setErr("Please enter a valid phone number including country code.");
+      return;
+    }
+    // ----------------------------
+
     try {
       setBusy(true);
       const res = await fetch("/api/paymob", {
@@ -53,13 +74,16 @@ export default function Checkout() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amountCents, items, billing: form }),
       });
+
       const data = await res.json();
       if (!res.ok || !data?.url) {
         console.error("PAYMOB_ERROR", data);
-        setErr(data?.error || "Payment init failed.");
+        setErr(data?.error || "Payment initialization failed.");
         setBusy(false);
         return;
       }
+
+      // Redirect to Paymob frame
       window.location.href = data.url;
     } catch (e: any) {
       console.error("NETWORK_ERROR", e);
@@ -83,29 +107,69 @@ export default function Checkout() {
             <p style={{ fontWeight: 700 }}>Total: {(amountCents / 100).toFixed(0)} EGP</p>
           </div>
 
-          <div style={{
-            maxWidth: 600,
-            margin: "1.5em auto",
-            display: "grid",
-            gap: "0.8em",
-            gridTemplateColumns: "1fr 1fr"
-          }}>
-            <input placeholder="First name"
+          <div
+            style={{
+              maxWidth: 600,
+              margin: "1.5em auto",
+              display: "grid",
+              gap: "0.8em",
+              gridTemplateColumns: "1fr 1fr",
+            }}
+          >
+            <input
+              placeholder="First name"
               value={form.first_name}
               onChange={(e) => setField("first_name", e.target.value)}
-              style={{ padding: "0.7em", border: "1px solid #ddd", borderRadius: 4 }} />
-            <input placeholder="Last name"
+              pattern="[A-Za-z\u0621-\u064A\s]{2,}"
+              title="Letters only, at least 2 characters"
+              style={{
+                padding: "0.7em",
+                border: "1px solid #ddd",
+                borderRadius: 4,
+              }}
+              required
+            />
+            <input
+              placeholder="Last name"
               value={form.last_name}
               onChange={(e) => setField("last_name", e.target.value)}
-              style={{ padding: "0.7em", border: "1px solid #ddd", borderRadius: 4 }} />
-            <input placeholder="Email"
+              pattern="[A-Za-z\u0621-\u064A\s]{2,}"
+              title="Letters only, at least 2 characters"
+              style={{
+                padding: "0.7em",
+                border: "1px solid #ddd",
+                borderRadius: 4,
+              }}
+            />
+            <input
+              type="email"
+              placeholder="Email"
               value={form.email}
               onChange={(e) => setField("email", e.target.value)}
-              style={{ gridColumn: "span 2", padding: "0.7em", border: "1px solid #ddd", borderRadius: 4 }} />
-            <input placeholder="Phone (eg. +201234567890)"
+              title="Enter a valid email like name@example.com"
+              style={{
+                gridColumn: "span 2",
+                padding: "0.7em",
+                border: "1px solid #ddd",
+                borderRadius: 4,
+              }}
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Phone (e.g. +201234567890)"
               value={form.phone_number}
               onChange={(e) => setField("phone_number", e.target.value)}
-              style={{ gridColumn: "span 2", padding: "0.7em", border: "1px solid #ddd", borderRadius: 4 }} />
+              pattern="\+?\d{8,15}"
+              title="Digits only, include country code"
+              style={{
+                gridColumn: "span 2",
+                padding: "0.7em",
+                border: "1px solid #ddd",
+                borderRadius: 4,
+              }}
+              required
+            />
           </div>
 
           {err && <p style={{ color: "#C00" }}>{err}</p>}
