@@ -5,11 +5,15 @@ type CartItem = { name: string; price: string; img?: string };
 
 export default function Checkout() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone_number: "" });
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone_number: "",
+  });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
-  // Load cart & saved form
   useEffect(() => {
     try {
       const c = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -29,7 +33,12 @@ export default function Checkout() {
     const m = (s || "").match(/[\d.]+/);
     return m ? Math.round(parseFloat(m[0]) * 100) : 0;
   };
-  const amountCents = cart.reduce((sum, p) => sum + parseEGP(p.price), 0);
+
+  // ─── Deposit logic ───────────────────────────────────────
+  const fullAmountCents = cart.reduce((sum, p) => sum + parseEGP(p.price), 0);
+  const depositEGP = 200;
+  const depositCents = depositEGP * 100;
+
   const items = cart.map((p) => ({
     name: p.name,
     amount_cents: parseEGP(p.price),
@@ -38,16 +47,14 @@ export default function Checkout() {
 
   const payNow = async () => {
     setErr("");
-
     if (!cart.length) {
       setErr("Your cart is empty.");
       return;
     }
 
-    // --- Improved validation ---
-    const nameReg = /^[A-Za-z\u0621-\u064A\s]{2,}$/; // Arabic & English letters, min 2 chars
+    const nameReg = /^[A-Za-z\u0621-\u064A\s]{2,}$/;
     const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneReg = /^\+?\d{8,15}$/; // optional '+' then 8-15 digits
+    const phoneReg = /^\+?\d{8,15}$/;
 
     if (!nameReg.test(form.first_name)) {
       setErr("Please enter a valid first name (letters or Arabic only).");
@@ -65,16 +72,19 @@ export default function Checkout() {
       setErr("Please enter a valid phone number including country code.");
       return;
     }
-    // ----------------------------
 
     try {
       setBusy(true);
       const res = await fetch("/api/paymob", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountCents, items, billing: form }),
+        body: JSON.stringify({
+          amountCents: depositCents,   // deposit only
+          fullAmountCents,
+          items,
+          billing: form,
+        }),
       });
-
       const data = await res.json();
       if (!res.ok || !data?.url) {
         console.error("PAYMOB_ERROR", data);
@@ -82,8 +92,6 @@ export default function Checkout() {
         setBusy(false);
         return;
       }
-
-      // Redirect to Paymob frame
       window.location.href = data.url;
     } catch (e: any) {
       console.error("NETWORK_ERROR", e);
@@ -94,6 +102,11 @@ export default function Checkout() {
 
   return (
     <section style={{ textAlign: "center", padding: "4em 1em" }}>
+      {/* 🔴 TEMP DEBUG LINE */}
+      <p style={{ color: "#C00", fontWeight: "bold" }}>
+        Build test #2 – deposit version
+      </p>
+
       <h2>Checkout</h2>
 
       {cart.length ? (
@@ -104,7 +117,22 @@ export default function Checkout() {
                 {p.name} — {p.price}
               </p>
             ))}
-            <p style={{ fontWeight: 700 }}>Total: {(amountCents / 100).toFixed(0)} EGP</p>
+            <p style={{ fontWeight: 700, marginTop: "0.5em" }}>
+              <span style={{ color: "#36454F" }}>Total Value:</span>{" "}
+              {(fullAmountCents / 100).toFixed(0)} EGP
+            </p>
+            <p
+              style={{
+                color: "#C5A253",
+                fontSize: "1.1rem",
+                marginTop: ".4em",
+              }}
+            >
+              Deposit required now: {depositEGP} EGP 
+              <span style={{ color: "#36454F", fontSize: ".95rem" }}>
+                (remaining due on delivery)
+              </span>
+            </p>
           </div>
 
           <div
@@ -120,21 +148,16 @@ export default function Checkout() {
               placeholder="First name"
               value={form.first_name}
               onChange={(e) => setField("first_name", e.target.value)}
-              pattern="[A-Za-z\u0621-\u064A\s]{2,}"
-              title="Letters only, at least 2 characters"
               style={{
                 padding: "0.7em",
                 border: "1px solid #ddd",
                 borderRadius: 4,
               }}
-              required
             />
             <input
               placeholder="Last name"
               value={form.last_name}
               onChange={(e) => setField("last_name", e.target.value)}
-              pattern="[A-Za-z\u0621-\u064A\s]{2,}"
-              title="Letters only, at least 2 characters"
               style={{
                 padding: "0.7em",
                 border: "1px solid #ddd",
@@ -142,33 +165,27 @@ export default function Checkout() {
               }}
             />
             <input
-              type="email"
               placeholder="Email"
+              type="email"
               value={form.email}
               onChange={(e) => setField("email", e.target.value)}
-              title="Enter a valid email like name@example.com"
               style={{
                 gridColumn: "span 2",
                 padding: "0.7em",
                 border: "1px solid #ddd",
                 borderRadius: 4,
               }}
-              required
             />
             <input
-              type="tel"
               placeholder="Phone (e.g. +201234567890)"
               value={form.phone_number}
               onChange={(e) => setField("phone_number", e.target.value)}
-              pattern="\+?\d{8,15}"
-              title="Digits only, include country code"
               style={{
                 gridColumn: "span 2",
                 padding: "0.7em",
                 border: "1px solid #ddd",
                 borderRadius: 4,
               }}
-              required
             />
           </div>
 
@@ -185,10 +202,17 @@ export default function Checkout() {
               background: busy ? "#C5A25380" : "#C5A253",
               color: "#fff",
               cursor: busy ? "default" : "pointer",
+              fontSize: "1rem",
             }}
           >
-            {busy ? "Redirecting…" : "Pay Now"}
+            {busy ? "Redirecting…" : `Pay Deposit (${depositEGP} EGP)`}
           </button>
+
+          <p style={{ marginTop: "1em", fontSize: ".9rem", color: "#555" }}>
+            After completing your {depositEGP} EGP deposit, our team will confirm
+            your order and arrange delivery. The remaining balance is collected
+            upon delivery.
+          </p>
         </>
       ) : (
         <p>Your cart is empty.</p>
