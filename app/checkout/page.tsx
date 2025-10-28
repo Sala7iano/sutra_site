@@ -103,9 +103,6 @@ export default function Checkout() {
   return (
     <section style={{ textAlign: "center", padding: "4em 1em" }}>
       {/* 🔴 TEMP DEBUG LINE */}
-      <p style={{ color: "#C00", fontWeight: "bold" }}>
-        Build test #2 – deposit version
-      </p>
 
       <h2>Checkout</h2>
 
