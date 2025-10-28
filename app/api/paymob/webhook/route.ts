@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const obj = body.obj;
 
-    // Step 1 – verify HMAC signature
+    // 🧾 Step 1 – verify HMAC signature
     const hmacString = [
       obj.amount_cents,
       obj.created_at,
@@ -40,22 +40,24 @@ export async function POST(request: Request) {
       .digest("hex");
 
     if (computedHash !== body.hmac) {
-      console.error("Invalid HMAC");
-      return NextResponse.json({ error: "Invalid HMAC" }, { status: 401 });
+      console.error("Invalid HMAC signature");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Step 2 – on successful payment, record order in Airtable
+    // 🛒 Step 2 – record successful deposits
     if (obj.success) {
       const order = obj.order;
+
       const record = {
         fields: {
           items: JSON.stringify(order.items || []),
           total_cents: Number(obj.amount_cents),
+          deposit_cents: Number(obj.amount_cents),
           customer_name: order.billing_data.first_name || "Guest",
           customer_email: order.billing_data.email || "",
           customer_phone: order.billing_data.phone_number || "",
           paymob_order_id: order.id,
-          status: "paid",
+          status: "deposit_paid",
           paid_at: new Date().toISOString(),
         },
       };
@@ -73,15 +75,21 @@ export async function POST(request: Request) {
       );
 
       if (!airtableResp.ok) {
-        const text = await airtableResp.text();
-        console.error("Airtable insert failed:", text);
-        return NextResponse.json({ error: "Airtable insert failed" }, { status: 500 });
+        const txt = await airtableResp.text();
+        console.error("Airtable insert failed:", txt);
+        return NextResponse.json(
+          { error: "Failed to insert Airtable record" },
+          { status: 500 }
+        );
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("Webhook error:", err);
-    return NextResponse.json({ error: err.message || String(err) }, { status: 500 });
+    console.error("Webhook error:", err);
+    return NextResponse.json(
+      { error: err.message || "Webhook failed" },
+      { status: 500 }
+    );
   }
 }
